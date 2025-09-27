@@ -2,7 +2,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-from homeassistant.backports.enum import StrEnum
 from tuya_iot import TuyaCloudOpenAPIEndpoint
 from typing_extensions import Final
 
