@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await device.initialize()
     product_info = get_device_product_info(device)
 
-    coordinator = TuyaBLECoordinator(hass, device)
+    coordinator = TuyaBLECoordinator(hass, device, entry)
 
     '''
     try:

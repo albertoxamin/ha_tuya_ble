@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import logging
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_DEVICE_ID
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -96,12 +97,13 @@ class TuyaBLEEntity(CoordinatorEntity):
 class TuyaBLECoordinator(DataUpdateCoordinator[None]):
     """Data coordinator for receiving Tuya BLE updates."""
 
-    def __init__(self, hass: HomeAssistant, device: TuyaBLEDevice) -> None:
+    def __init__(self, hass: HomeAssistant, device: TuyaBLEDevice, config_entry: ConfigEntry) -> None:
         """Initialise the coordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
+            config_entry=config_entry,
         )
         self._device = device
         self._disconnected: bool = True

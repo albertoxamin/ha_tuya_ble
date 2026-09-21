@@ -85,3 +85,16 @@ and this project adheres to [Semantic Versioning].
 
 - Connection to the device is postponed now. Previously some out of range device might prevents HA from fully booting.
 - Improved connection stability.
+
+## [0.2.0] - 2026-09-21
+
+### Fixed
+
+- Config flow loads on Home Assistant 2026.9: `CONF_APP_TYPE` and other Tuya IoT login keys stay in this integration. Core `tuya.const` no longer exports them.
+- Options flow uses `OptionsFlow` instead of `OptionsFlowWithConfigEntry`.
+- Login still accepts the old stored key `tuya_app_type`.
+- Config flow will load in 2026.12: `_abort_if_unique_id_configured` no longer reloads when an update listener is registered.
+
+### Changed
+
+- Official Tuya is no longer a required dependency. BLE login uses Tuya IoT credentials from this integration's own form.

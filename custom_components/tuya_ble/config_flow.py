@@ -12,7 +12,7 @@ from tuya_iot import AuthType
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
-    OptionsFlowWithConfigEntry,
+    OptionsFlow,
 )
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
@@ -150,12 +150,8 @@ def _show_login_form(
     )
 
 
-class TuyaBLEOptionsFlow(OptionsFlowWithConfigEntry):
+class TuyaBLEOptionsFlow(OptionsFlow):
     """Handle a Tuya BLE options flow."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        super().__init__(config_entry)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -222,7 +218,7 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle the bluetooth discovery step."""
         await self.async_set_unique_id(discovery_info.address)
-        self._abort_if_unique_id_configured()
+        self._abort_if_unique_id_configured(reload_on_update=False)
         self._discovery_info = discovery_info
         if self._manager is None:
             self._manager = HASSTuyaBLEDeviceManager(self.hass, self._data)
@@ -291,7 +287,7 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(
                 discovery_info.address, raise_on_progress=False
             )
-            self._abort_if_unique_id_configured()
+            self._abort_if_unique_id_configured(reload_on_update=False)
             credentials = await self._manager.get_device_credentials(
                 discovery_info.address, self._get_device_info_error, True
             )
@@ -356,4 +352,4 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> TuyaBLEOptionsFlow:
         """Get the options flow for this handler."""
-        return TuyaBLEOptionsFlow(config_entry)
+        return TuyaBLEOptionsFlow()

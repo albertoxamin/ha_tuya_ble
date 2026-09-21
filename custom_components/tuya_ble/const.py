@@ -26,6 +26,8 @@ CONF_ENDPOINT = "endpoint"
 CONF_ACCESS_ID = "access_id"
 CONF_ACCESS_SECRET = "access_secret"
 CONF_APP_TYPE = "app_type"
+# Stored by older builds that imported CONF_APP_TYPE from core tuya.const
+CONF_APP_TYPE_LEGACY = "tuya_app_type"
 SMARTLIFE_APP = "smartlife"
 TUYA_SMART_APP = "tuyaSmart"
 

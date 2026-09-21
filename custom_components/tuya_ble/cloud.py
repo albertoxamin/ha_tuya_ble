@@ -15,11 +15,6 @@ from homeassistant.const import (
     CONF_USERNAME,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, EntityDescription
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-)
 
 from tuya_iot import (
     TuyaOpenAPI,
@@ -50,6 +45,7 @@ from .const import (
     CONF_ACCESS_SECRET,
     CONF_AUTH_TYPE,
     CONF_APP_TYPE,
+    CONF_APP_TYPE_LEGACY,
     CONF_ENDPOINT,
     SMARTLIFE_APP,
     TUYA_DOMAIN,
@@ -92,13 +88,23 @@ CONF_TUYA_DEVICE_KEYS = [
 _cache: dict[str, TuyaCloudCacheItem] = {}
 
 
+def _normalize_login_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Copy login dict and map the old core-tuya app_type key."""
+    normalized = dict(data)
+    if normalized.get(CONF_APP_TYPE) is None:
+        legacy = normalized.get(CONF_APP_TYPE_LEGACY)
+        if legacy is not None:
+            normalized[CONF_APP_TYPE] = legacy
+    return normalized
+
+
 class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
     """Cloud connected manager of the Tuya BLE devices credentials."""
 
     def __init__(self, hass: HomeAssistant, data: dict[str, Any]) -> None:
         assert hass is not None
         self._hass = hass
-        self._data = data
+        self._data = _normalize_login_data(data)
 
     @staticmethod
     def _is_login_success(response: dict[Any, Any]) -> bool:
@@ -129,6 +135,8 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
 
         if len(data) == 0:
             return {}
+
+        data = _normalize_login_data(data)
 
         api = TuyaOpenAPI(
             endpoint=data.get(CONF_ENDPOINT, ""),
@@ -208,7 +216,7 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
         tuya_config_entries = self._hass.config_entries.async_entries(TUYA_DOMAIN)
         for config_entry in tuya_config_entries:
             data.clear()
-            data.update(config_entry.data)
+            data.update(_normalize_login_data(config_entry.data))
             key = self._get_cache_key(data)
             item = _cache.get(key)
             if item is None or len(item.credentials) == 0:
@@ -220,7 +228,7 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
         ble_config_entries = self._hass.config_entries.async_entries(DOMAIN)
         for config_entry in ble_config_entries:
             data.clear()
-            data.update(config_entry.options)
+            data.update(_normalize_login_data(config_entry.options))
             key = self._get_cache_key(data)
             item = _cache.get(key)
             if item is None or len(item.credentials) == 0:
