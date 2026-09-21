@@ -6,6 +6,8 @@ This integration supports Tuya devices connected via BLE.
 
 _Inspired by code of [@redphx](https://github.com/redphx/poc-tuya-ble-fingerbot)_
 
+Updated from https://github.com/ha-tuya-ble/ha_tuya_ble
+
 ## Installation
 
 Place the `custom_components` folder in your configuration directory (or add its contents to an existing `custom_components` folder). Alternatively install via [HACS](https://hacs.xyz/).
