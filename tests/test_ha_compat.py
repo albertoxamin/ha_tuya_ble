@@ -46,6 +46,20 @@ def test_cloud_maps_legacy_app_type() -> None:
     assert "CONF_APP_TYPE_LEGACY" in cloud_text
 
 
+def test_entity_ids_are_not_forced_to_sensor() -> None:
+    devices_text = (ROOT / "devices.py").read_text()
+    assert 'generate_entity_id(\n            "sensor.{}' not in devices_text
+    assert "generate_entity_id" not in devices_text
+    assert "async_update_entity" in devices_text
+
+
+def test_ppm_uses_unit_of_ratio() -> None:
+    for name in ("sensor.py", "number.py"):
+        text = (ROOT / name).read_text()
+        assert "CONCENTRATION_PARTS_PER_MILLION" not in text
+        assert "UnitOfRatio.PARTS_PER_MILLION" in text
+
+
 def test_abort_does_not_reload_with_update_listener() -> None:
     flow_text = (ROOT / "config_flow.py").read_text()
     assert "_abort_if_unique_id_configured(reload_on_update=False)" in flow_text
@@ -58,5 +72,7 @@ if __name__ == "__main__":
     test_no_core_tuya_imports()
     test_conf_app_type_is_local()
     test_cloud_maps_legacy_app_type()
+    test_entity_ids_are_not_forced_to_sensor()
+    test_ppm_uses_unit_of_ratio()
     test_abort_does_not_reload_with_update_listener()
     print("ok")

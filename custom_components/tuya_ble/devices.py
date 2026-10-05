@@ -7,12 +7,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_DEVICE_ID
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.entity import (
-    DeviceInfo,
-    EntityDescription,
-    generate_entity_id,
-)
+from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -79,9 +75,29 @@ class TuyaBLEEntity(CoordinatorEntity):
         self._attr_has_entity_name = True
         self._attr_device_info = get_device_info(self._device)
         self._attr_unique_id = f"{self._device.device_id}-{description.key}"
-        self.entity_id = generate_entity_id(
-            "sensor.{}", self._attr_unique_id, hass=hass
-        )
+
+    async def async_added_to_hass(self) -> None:
+        """Move ids created as sensor.* onto this entity's real domain.
+
+        Older builds forced every entity id through sensor.{}. Home Assistant
+        rejects that mismatch in 2027.5.
+        """
+        await super().async_added_to_hass()
+        domain = self.platform.domain
+        current = self.entity_id
+        if current.startswith(f"{domain}."):
+            return
+        new_entity_id = f"{domain}.{current.split('.', 1)[1]}"
+        try:
+            er.async_get(self.hass).async_update_entity(
+                current, new_entity_id=new_entity_id
+            )
+        except ValueError:
+            _LOGGER.warning(
+                "Left %s in place; %s is already registered",
+                current,
+                new_entity_id,
+            )
 
     @property
     def available(self) -> bool:
